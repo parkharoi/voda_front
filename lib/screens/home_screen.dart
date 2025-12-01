@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:voda_front/screens/diary_write_screen.dart';
+import 'package:voda_front/screens/login_screen.dart';
+import 'package:voda_front/viewmodels/auth_view_model.dart';
 import '../common/app_colors.dart';
+import '../models/diary_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,109 +17,99 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime _selectedDay = DateTime.now();
 
-  // 임시 데이터 (나중에 ViewModel 연결 예정)
-  final List<String> _dummyDiaries = [
-    "오늘은 기분이 참 좋은 날이었다.",
-    "플러터 공부가 생각보다 재밌다.",
-    "서버 연결 성공! 이제 데이터를 불러오자.",
-  ];
+  final Map<DateTime, List<Diary>> _diaries = {
+  };
 
-  @override
-  void initState() {
-    super.initState();
-    initializeDateFormatting();
+  List<Diary> _getDiariesForDay(DateTime day) {
+    return _diaries[DateTime.utc(day.year, day.month, day.day)] ?? [];
   }
 
   @override
   Widget build(BuildContext context) {
+    final String selectedDateText = DateFormat('M월 d일 EEEE', 'ko_KR').format(_selectedDay);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("나의 기록"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // 설정 화면 이동
-            },
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "나의 일기",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textBlack,
+                        ),
+                      ),
+                      const SizedBox(height :4),
+                      Text(
+                        selectedDateText,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            color: AppColors.textGray,
+                            fontWeight: FontWeight.w500
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // 일단 사용자 아이콘에 로그아웃 기능 연결
+                  GestureDetector(
+                    onTap: () {
+                      _showLogoutDialog(context); //팝업
+                    },
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: const Icon(Icons.person, color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              // 캘린더 영역
+              _buildCalendar(),
+
+              const SizedBox(height: 30),
+
+              // 하단 영역
+              Expanded(
+                child: _buildBottomContent(),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-
-          _buildCalendar(),
-
-          const SizedBox(height: 20),
-
-
-          Expanded(
-            child: _buildDiaryList(),
-          ),
-        ],
-      ),
-
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: '작성'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이'),
-        ],
-      ),
-
-
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // 글쓰기 화면으로 이동
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
 
-  // 📅 캘린더 위젯
+  // 캘린더 위젯
   Widget _buildCalendar() {
     return TableCalendar(
-      locale: 'ko_KR', // 한국어
-      firstDay: DateTime.utc(2023, 1, 1),
+      locale: 'ko_KR',
+      firstDay: DateTime.utc(2020, 1, 1),
       lastDay: DateTime.utc(2030, 12, 31),
       focusedDay: _focusedDay,
-
-      // 헤더 스타일 (2025년 11월)
-      headerStyle: const HeaderStyle(
-        formatButtonVisible: false, // 2주/1주 보기 버튼 숨김
-        titleCentered: true,
-        titleTextStyle: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          fontFamily: 'NeoDunggeunmoCode', // 폰트 강제 지정 (확실하게)
-        ),
-      ),
-
-      // 달력 스타일링
-      calendarStyle: const CalendarStyle(
-        // 오늘 날짜: 핑크색 동그라미
-        todayDecoration: BoxDecoration(
-          color: AppColors.primary,
-          shape: BoxShape.circle,
-        ),
-        // 선택한 날짜: 진한 회색 동그라미
-        selectedDecoration: BoxDecoration(
-          color: AppColors.textBlack,
-          shape: BoxShape.circle,
-        ),
-        // 주말 색상 (선택사항)
-        weekendTextStyle: TextStyle(color: Colors.red),
-      ),
-
-      // 날짜 선택 로직
       selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
       onDaySelected: (selectedDay, focusedDay) {
         setState(() {
@@ -122,63 +117,171 @@ class _HomeScreenState extends State<HomeScreen> {
           _focusedDay = focusedDay;
         });
       },
+      eventLoader: _getDiariesForDay,
+
+      calendarStyle: const CalendarStyle(
+        outsideDaysVisible: false,
+        todayTextStyle: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+        todayDecoration: BoxDecoration(color: Colors.transparent),
+        selectedDecoration: BoxDecoration(
+          color: AppColors.primary,
+          shape: BoxShape.circle,
+        ),
+        selectedTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        markerDecoration: BoxDecoration(
+          color: AppColors.secondaryPink,
+          shape: BoxShape.circle,
+        ),
+        markerSize: 5,
+        markersAlignment: Alignment.bottomCenter,
+      ),
+
+      headerStyle: HeaderStyle(
+        formatButtonVisible: false,
+        titleCentered: true,
+        titleTextFormatter: (date, locale) => DateFormat('yyyy.MM', locale).format(date),
+        titleTextStyle: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: AppColors.textBlack,
+        ),
+        leftChevronIcon: const Icon(Icons.chevron_left, color: AppColors.textBlack),
+        rightChevronIcon: const Icon(Icons.chevron_right, color: AppColors.textBlack),
+      ),
+      rowHeight: 50,
     );
   }
 
-  // 📝 리스트 위젯
-  Widget _buildDiaryList() {
+  // 📝 하단 컨텐츠
+  Widget _buildBottomContent() {
+    final selectedDiaries = _getDiariesForDay(_selectedDay);
+
+    if (selectedDiaries.isEmpty) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.edit_note_rounded, size: 60, color: AppColors.textGray),
+          const SizedBox(height: 16),
+          const Text(
+            "작성된 일기가 없어요.",
+            style: TextStyle(
+              fontSize: 16,
+              color: AppColors.textGray,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: 200,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DiaryWriteScreen(
+                      selectedDate: _selectedDay,
+                    ),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: const Text(
+                "오늘의 일기 쓰기",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 50),
+        ],
+      );
+    }
+
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: _dummyDiaries.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemCount: selectedDiaries.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
+        final diary = selectedDiaries[index];
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade200), // 연한 테두리
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
           ),
           child: Row(
             children: [
-              // 감정 아이콘
-              const Text("🥰", style: TextStyle(fontSize: 28)),
+              Text(diary.moodEmoji, style: const TextStyle(fontSize: 28)),
               const SizedBox(width: 16),
-
-              // 내용
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "11월 ${29 - index}일",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textGray,
-                      ),
+                      diary.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _dummyDiaries[index],
-                      style: const TextStyle(fontSize: 16),
+                      diary.content,
+                      style: const TextStyle(color: AppColors.textGray, fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.textGray),
             ],
           ),
         );
       },
+    );
+  }
+
+  // ✨ [추가] 로그아웃 다이얼로그 함수
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        title: const Text("로그아웃", style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text("정말 로그아웃 하시겠습니까?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // 취소
+            child: const Text("취소", style: TextStyle(color: AppColors.textGray)),
+          ),
+          TextButton(
+            onPressed: () async {
+              // 1. 다이얼로그 닫기
+              Navigator.pop(context);
+
+              // 2. 뷰모델에게 로그아웃 요청 (토큰 삭제)
+              await Provider.of<AuthViewModel>(context, listen: false).logout();
+
+              // 3. 로그인 화면으로 강제 이동 (뒤로가기 방지)
+              if (context.mounted) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false, // 이전 화면 스택 모두 삭제
+                );
+              }
+            },
+            child: const Text("확인", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,17 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:voda_front/common/app_theme.dart';
 import 'package:voda_front/screens/login_screen.dart';
 import 'package:voda_front/viewmodels/auth_view_model.dart';
+import 'package:voda_front/viewmodels/diary_view_model.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await initializeDateFormatting();
+
   runApp(
     MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => AuthViewModel()),
-        ],
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => DiaryViewModel()),
+      ],
       child: const MyApp(),
-    )
+    ),
   );
 }
 

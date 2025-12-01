@@ -49,8 +49,8 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _storage.delete(key: 'accessToken');
-    await _storage.delete(key: 'refreshToken');
+    await _storage.delete(key: AppConstants.accessTokenKey);
+    await _storage.delete(key: AppConstants.refreshTokenKey);
     _token = null;
     notifyListeners();
   }
