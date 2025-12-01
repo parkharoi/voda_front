@@ -8,15 +8,16 @@ class AppColors {
   AppColors._();
   
   static const Color primary = Color(0xFFFF8E99);
+  static const Color secondaryPink = Color(0xFFFFB5B5);
 
   //배경색
   static const Color background = Colors.white;
 
   //텍스트
-  static const Color textBlack = Color(0xFF1A1A1A);
+  static const Color textBlack = Color(0xFF333333);
   static const Color textGray = Color(0xFF9E9E9E);
 
   //캘린더
-  static const Color calendarToday = primary;
-  static const Color calendarSelected = textBlack;
+  static const Color calendarToday = Color(0xFF555555);
+  static const Color calendarSelected = primary;
 }

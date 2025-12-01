@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:voda_front/components/voda_text_field.dart';
 import 'package:voda_front/viewmodels/auth_view_model.dart';
 import '../common/app_colors.dart';
-import 'home_screen.dart'; // 로그인 성공 시 이동할 곳
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
