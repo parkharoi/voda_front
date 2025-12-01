@@ -35,8 +35,6 @@ class AuthViewModel extends ChangeNotifier {
       await _storage.write(
           key: AppConstants.refreshTokenKey,
           value: _token!.refreshToken);
-      
-      print("토큰 저장 완료 : ${_token!.accessToken.substring(0,10)}");
     }
       return true;
     }catch(e) {

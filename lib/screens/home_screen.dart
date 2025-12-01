@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart'; // 캘린더 패키지
-import 'package:intl/date_symbol_data_local.dart'; // 한국어 날짜용
-import '../common/app_colors.dart'; // ✨ 핑크색 가져오기
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import '../common/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key}); // ✨ 세미콜론(;) 필수!
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -24,14 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    initializeDateFormatting(); // 날짜 포맷 초기화
+    initializeDateFormatting();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("나의 기록"), // 테마(AppTheme) 덕분에 폰트 자동 적용됨
+        title: const Text("나의 기록"),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -43,23 +43,23 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          // 1. 캘린더 영역
+
           _buildCalendar(),
 
           const SizedBox(height: 20),
 
-          // 2. 리스트 영역 (Expanded 필수)
+
           Expanded(
             child: _buildDiaryList(),
           ),
         ],
       ),
 
-      // 3. 하단 탭바 (모양만 잡아둠)
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: AppColors.primary, // ✨ 선택된 아이콘 핑크색!
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
@@ -68,12 +68,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // ✨ 작성 버튼 (플로팅 버튼) - 핑크색 적용
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // 글쓰기 화면으로 이동
         },
-        backgroundColor: AppColors.primary, // 핑크색
+        backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
