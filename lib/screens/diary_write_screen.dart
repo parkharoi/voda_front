@@ -17,7 +17,7 @@ class DiaryWriteScreen extends StatefulWidget {
 class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  int _selectedMoodIndex = 0; // 기본 기분: 첫 번째
+  int _selectedMoodIndex = 0; // 기본 기분: 첫 번째 (HAPPY)
 
   @override
   void dispose() {
@@ -28,8 +28,8 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ViewModel 가져오기
     final diaryViewModel = Provider.of<DiaryViewModel>(context);
-
     final formattedDate = DateFormat('yyyy.MM.dd EEEE', 'ko_KR').format(widget.selectedDate);
 
     return Scaffold(
@@ -39,7 +39,11 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: AppColors.textBlack),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            // 작성 중 취소 시 이미지 등 초기화가 필요하면 여기서 호출
+            diaryViewModel.clearImage();
+            Navigator.pop(context);
+          },
         ),
         title: const Text("일기 작성하기", style: TextStyle(color: AppColors.textBlack, fontWeight: FontWeight.bold, fontSize: 18)),
         centerTitle: true,
@@ -63,7 +67,7 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
 
             // 2. 이미지 추가 영역
             GestureDetector(
-              onTap: () => diaryViewModel.pickImage(), //갤러리 열기
+              onTap: () => diaryViewModel.pickImage(), // 갤러리 열기
               child: Container(
                 width: double.infinity,
                 height: 200,
@@ -72,7 +76,6 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade200),
                 ),
-                // 이미지가 있으면 보여주고, 없으면 아이콘 보여줌
                 child: diaryViewModel.selectedImage != null
                     ? ClipRRect(
                   borderRadius: BorderRadius.circular(12),
@@ -111,7 +114,7 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
             // 4. 내용 입력
             TextField(
               controller: _contentController,
-              maxLines: null, // 무제한 줄바꿈
+              maxLines: null,
               keyboardType: TextInputType.multiline,
               style: const TextStyle(fontSize: 16, color: AppColors.textBlack, height: 1.5),
               decoration: const InputDecoration(
@@ -121,7 +124,7 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
                 contentPadding: EdgeInsets.zero,
               ),
             ),
-            const SizedBox(height: 100), // 키보드 올라올 때 여유 공간
+            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -147,22 +150,30 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  // 로딩 중이면 버튼 비활성화
                   onPressed: diaryViewModel.isUploading
                       ? null
                       : () async {
-                    // 작성 완료 클릭!
+                    // 빈 값 체크 (선택 사항)
+                    if (_titleController.text.isEmpty || _contentController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('제목과 내용을 입력해주세요.')));
+                      return;
+                    }
+
+                    // 작성 완료 요청
                     final success = await diaryViewModel.uploadDiary(
                       title: _titleController.text,
                       content: _contentController.text,
                       moodIndex: _selectedMoodIndex,
+                      date: widget.selectedDate, // 작성 날짜 전달
                     );
 
                     if (success && mounted) {
-                      Navigator.pop(context); // 성공하면 닫기
+                      Navigator.pop(context); // 성공 시 화면 닫기
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('일기가 등록되었습니다!')),
                       );
+                      // 성공 후 캘린더 데이터 갱신 요청
+                      diaryViewModel.fetchMonthlyDiaries(widget.selectedDate.year, widget.selectedDate.month);
                     } else if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('등록 실패! 다시 시도해주세요.')),
@@ -187,7 +198,7 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
     );
   }
 
-  // 기분 선택 위젯
+  // 기분 선택 위젯 (여기에 있어야 정상 작동합니다)
   Widget _buildMoodSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

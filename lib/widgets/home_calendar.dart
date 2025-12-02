@@ -9,6 +9,7 @@ class HomeCalendar extends StatelessWidget {
   final DateTime selectedDay;
   final Function(DateTime, DateTime) onDaySelected;
   final List<Diary> Function(DateTime) eventLoader;
+  final Function(DateTime) onPageChanged;
 
   const HomeCalendar({
     super.key,
@@ -16,6 +17,7 @@ class HomeCalendar extends StatelessWidget {
     required this.selectedDay,
     required this.onDaySelected,
     required this.eventLoader,
+    required this.onPageChanged,
   });
 
   @override
@@ -28,6 +30,7 @@ class HomeCalendar extends StatelessWidget {
       selectedDayPredicate: (day) => isSameDay(selectedDay, day),
       onDaySelected: onDaySelected,
       eventLoader: eventLoader,
+      onPageChanged: onPageChanged,
       calendarStyle: const CalendarStyle(
         outsideDaysVisible: false,
         todayTextStyle: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),

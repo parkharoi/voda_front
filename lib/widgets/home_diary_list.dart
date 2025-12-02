@@ -32,7 +32,6 @@ class HomeDiaryList extends StatelessWidget {
                   children: [
                     Text(diary.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
-                    // ✅ [에러 해결] 내용이 null이면 빈 문자열 보여주기
                     Text(
                       diary.content ?? "",
                       style: const TextStyle(color: AppColors.textGray, fontSize: 14),
