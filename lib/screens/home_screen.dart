@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:voda_front/common/app_colors.dart';
+import 'package:voda_front/common/constants.dart';
 import 'package:voda_front/models/diary_model.dart';
+import 'package:voda_front/screens/chat_screen.dart';
+import 'package:voda_front/screens/diary_detail_screen.dart';
 import 'package:voda_front/viewmodels/auth_view_model.dart';
 import 'package:voda_front/viewmodels/diary_view_model.dart';
 import 'package:voda_front/screens/login_screen.dart';
@@ -37,11 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     final diaryViewModel = Provider.of<DiaryViewModel>(context);
 
-    // 선택된 날짜의 일기 데이터 찾기
     final dateKey = DateTime.utc(_selectedDay.year, _selectedDay.month, _selectedDay.day);
     final List<Diary>? dailyDiaries = diaryViewModel.diaryMap[dateKey];
     final Diary? selectedDiary = (dailyDiaries != null && dailyDiaries.isNotEmpty)
@@ -49,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         : null;
 
     return Scaffold(
-      backgroundColor: Colors.white, // 배경색
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -59,16 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-
-                    // (1) 상단 헤더
                     HomeHeader(
                       selectedDay: _selectedDay,
                       onLogout: () => _showLogoutDialog(context),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // (2) 캘린더 (이제 같이 스크롤됨!)
                     HomeCalendar(
                       focusedDay: _focusedDay,
                       selectedDay: _selectedDay,
@@ -82,33 +80,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         return diaryViewModel.diaryMap[key] ?? [];
                       },
                     ),
-
                     const SizedBox(height: 20),
 
                     // (3) 감정 통계 카드
                     _buildEmotionStatsCard(diaryViewModel.diaryMap.values.expand((e) => e).toList()),
 
                     const SizedBox(height: 20),
-
-                    // (4) 응원 배너
                     _buildCheeringBanner(),
-
                     const SizedBox(height: 20),
 
                     // (5) 일기 미리보기 카드
                     _buildDiaryPreviewCard(selectedDiary),
 
-                    const SizedBox(height: 40), // 버튼에 가려지지 않게 여백 추가
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),
             ),
-
             Container(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border(top: BorderSide(color: Colors.grey.shade100)), // 구분선
+                border: Border(top: BorderSide(color: Colors.grey.shade100)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -125,19 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 아래는 위젯 디자인 코드들 (그대로 유지) ---
-
-  // [감정 통계 카드]
   Widget _buildEmotionStatsCard(List<Diary> allDiaries) {
-    int happyCount = 0, peaceCount = 0, sadCount = 0, anxietyCount = 0, excitedCount = 0;
-    for (var diary in allDiaries) {
-      if (diary.moodEmoji == "🥰" || diary.moodEmoji == "😊") happyCount++;
-      else if (diary.moodEmoji == "😌") peaceCount++;
-      else if (diary.moodEmoji == "😢") sadCount++;
-      else if (diary.moodEmoji == "😨") anxietyCount++;
-      else if (diary.moodEmoji == "🥳") excitedCount++;
-    }
-    int total = allDiaries.length > 0 ? allDiaries.length : 1;
+    int total = allDiaries.isNotEmpty ? allDiaries.length : 1;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -151,26 +133,32 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           const Text("나의 감정 기록 📊", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textBlack)),
           const SizedBox(height: 20),
-          _buildStatRow("행복해요", "😊", happyCount, total, Colors.amber),
-          _buildStatRow("평온해요", "😌", peaceCount, total, Colors.green.shade300),
-          _buildStatRow("슬퍼요", "😢", sadCount, total, Colors.blue.shade300),
-          _buildStatRow("불안해요", "😨", anxietyCount, total, Colors.red.shade300),
-          _buildStatRow("신나요", "🥳", excitedCount, total, Colors.purple.shade300),
+          ...AppConstants.moods.map((mood) {
+            // 현재 기분(mood['code'])과 일치하는 일기 개수 세기
+            int count = allDiaries.where((d) => d.moodCode == mood['code']).length;
+
+            return _buildStatRow(mood, count, total);
+          }).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildStatRow(String label, String emoji, int count, int total, Color color) {
+  Widget _buildStatRow(Map<String, dynamic> moodData, int count, int total) {
     double percent = count / total;
+    Color color = moodData['color'];
+    IconData icon = moodData['icon'];
+    String label = moodData['label'];
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
+          // 이모지 텍스트 대신 아이콘 사용
           Container(
             width: 36, height: 36, alignment: Alignment.center,
             decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-            child: Text(emoji, style: const TextStyle(fontSize: 18)),
+            child: Icon(icon, size: 20, color: color),
           ),
           const SizedBox(width: 12),
           SizedBox(width: 60, child: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
@@ -193,7 +181,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // [응원 배너]
   Widget _buildCheeringBanner() {
     return Container(
       width: double.infinity,
@@ -207,7 +194,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // [일기 미리보기 카드]
   Widget _buildDiaryPreviewCard(Diary? diary) {
     if (diary == null) {
       return Container(
@@ -223,7 +209,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
+
     final dateStr = DateFormat('M월 d일 EEEE', 'ko_KR').format(diary.date);
+    // 현재 일기의 감정 데이터 가져오기
+    final moodData = AppConstants.getMoodData(diary.moodCode);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -235,17 +225,22 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(dateStr, style: const TextStyle(color: AppColors.textGray, fontSize: 13)),
-              Text(diary.moodEmoji, style: const TextStyle(fontSize: 24)),
+              // 텍스트 이모지 대신 아이콘 표시
+              Icon(moodData['icon'], color: moodData['color'], size: 32),
             ],
           ),
           const SizedBox(height: 12),
           Text(diary.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textBlack)),
           const SizedBox(height: 4),
-          Text(diary.content ?? "", maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: AppColors.textBlack, height: 1.5)),
+          Text(diary.description ?? "", maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 14, color: AppColors.textBlack, height: 1.5)),
           const SizedBox(height: 16),
           GestureDetector(
             onTap: () {
-              // 상세 페이지 이동
+              Navigator.push(context,
+                MaterialPageRoute(
+                  builder: (context) => DiaryDetailScreen(diary: diary,),
+                ),
+              );
             },
             child: const Text("더 보기 →", style: TextStyle(color: Color(0xFFFF8895), fontWeight: FontWeight.bold, fontSize: 14)),
           ),
@@ -254,7 +249,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // [하단 버튼]
   Widget _buildBottomButtons(BuildContext context) {
     return Column(
       children: [
@@ -274,7 +268,10 @@ class _HomeScreenState extends State<HomeScreen> {
           width: double.infinity, height: 55,
           child: OutlinedButton.icon(
             onPressed: () {
-              // 챗봇 화면 이동
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ChatScreen()),
+              );
             },
             icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFFFF8895)),
             label: const Text("윌로우와 대화하기", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFFF8895))),
@@ -285,7 +282,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // 로그아웃 다이얼로그
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,

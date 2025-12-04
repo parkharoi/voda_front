@@ -3,12 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:voda_front/models/diary_model.dart';
 import 'package:voda_front/repositories/diary_repository.dart';
-import 'package:voda_front/common/constants.dart'; // AppConstants import 확인
 
 class DiaryViewModel extends ChangeNotifier {
   final DiaryRepository _repository = DiaryRepository();
 
-  // 1. 일기 작성 (Upload) 관련 상태
   File? _selectedImage;
   bool _isUploading = false;
 
@@ -62,16 +60,6 @@ class DiaryViewModel extends ChangeNotifier {
     return success;
   }
 
-  String _convertIndexToMoodString(int index) {
-    switch (index) {
-      case 0: return "HAPPY";
-      case 1: return "PEACE";
-      case 2: return "SAD";
-      case 3: return "ANXIETY";
-      case 4: return "EXCITED";
-      default: return "HAPPY";
-    }
-  }
 
   // 2. 달력 조회 (Fetch) 관련 상태
 

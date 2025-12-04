@@ -24,7 +24,7 @@ class HomeDiaryList extends StatelessWidget {
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200)),
           child: Row(
             children: [
-              Text(diary.moodEmoji, style: const TextStyle(fontSize: 28)),
+              Text(diary.moodCode, style: const TextStyle(fontSize: 28)),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -33,7 +33,7 @@ class HomeDiaryList extends StatelessWidget {
                     Text(diary.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
                     Text(
-                      diary.content ?? "",
+                      diary.description ?? "",
                       style: const TextStyle(color: AppColors.textGray, fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

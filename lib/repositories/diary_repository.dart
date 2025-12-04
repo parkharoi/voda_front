@@ -86,4 +86,7 @@ class DiaryRepository {
       return [];
       }
   }
+
+  //일별 조회
+  Future<Diary?> getDiaryByDate(String dateStr)
 }
