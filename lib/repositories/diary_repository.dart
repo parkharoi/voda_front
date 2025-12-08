@@ -1,12 +1,16 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:voda_front/common/api_client.dart';
 import 'package:voda_front/common/config/api_config.dart';
 import 'package:voda_front/common/constants.dart';
 import 'package:http_parser/http_parser.dart';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:voda_front/models/diary_model.dart';
+
 class DiaryRepository {
+  final ApiClient _client = ApiClient();
   final _storage = const FlutterSecureStorage();
 
   Future<bool> createDiary(File? imageFile, Map<String, dynamic> diaryData) async {
@@ -41,13 +45,11 @@ class DiaryRepository {
       request.files.add(multipartFile);
     }
 
-    print("🚀 일기 작성 요청: URL=$url");
     try {
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print("✅ 일기 작성 성공!");
         return true;
       } else {
         print("🔥 실패 상태 코드: ${response.statusCode}");
@@ -59,4 +61,32 @@ class DiaryRepository {
       return false;
     }
   }
+
+  //월별 조회
+  Future<List<Diary>> getMonthlyDiaries(int year, int month) async {
+    try {
+      final response = await _client.get(
+        ApiConfig.diaryPath,
+        queryParams: {
+          'year': year.toString(),
+          'month': month.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        final List<dynamic> dataList = jsonResponse['data'];
+        return dataList.map((item) => Diary.fromJson(item)).toList();
+      } else {
+        print("🔥 조회 실패 내용: ${utf8.decode(response.bodyBytes)}");
+        throw Exception('일기를 불러오지 못했습니다.');
+      }
+      } catch (e) {
+        print(e);
+      return [];
+      }
+  }
+
+  //일별 조회
+  Future<Diary?> getDiaryByDate(String dateStr)
 }
