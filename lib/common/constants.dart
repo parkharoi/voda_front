@@ -18,7 +18,7 @@ class AppConstants {
     {
       'code' : 'PEACE',
       'label' : '평온해요',
-      'icon' : Icons.spa,
+      'icon' : Icons.sentiment_satisfied,
       'color' : Color(0xFF81C784),
     },
     {
@@ -30,13 +30,13 @@ class AppConstants {
     {
       'code' : 'ANXIETY',
       'label' : '불안해요',
-      'icon' : Icons.error_outline,
+      'icon' : Icons.sentiment_neutral,
       'color' : Color(0xFF9575CD),
     },
     {
       'code' : 'EXCITED',
       'label' : '신나요',
-      'icon' : Icons.celebration,
+      'icon' : Icons.sentiment_very_satisfied_outlined,
       'color' : Color(0xFFFF8A65),
     },
   ];

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:voda_front/common/constants.dart';
 import 'package:voda_front/models/diary_model.dart';
 import 'package:voda_front/repositories/diary_repository.dart';
 
@@ -88,5 +89,12 @@ class DiaryViewModel extends ChangeNotifier {
     } catch (e) {
       print("일기 불러오기 실패: $e");
     }
+  }
+
+  String _convertIndexToMoodString(int index) {
+    if(index >= 0 && index < AppConstants.moods.length) {
+      return AppConstants.moods[index]['code'];
+    }
+    return 'HAPPY';
   }
 }
