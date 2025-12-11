@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:voda_front/common/constants.dart';
 import 'package:voda_front/viewmodels/diary_view_model.dart';
-import 'dart:io'; // 파일 이미지를 보여주기 위해 필요
+import 'dart:io';
 
-// 필요한 경우 색상 상수 파일 import (없으면 아래 하드코딩된 색상 사용)
-// import '../common/app_colors.dart';
 
 class DiaryWriteScreen extends StatefulWidget {
   final DateTime selectedDate;
-
-  // 수정 시 필요한 데이터들 (선택사항)
   final String? existingTitle;
   final String? existingContent;
   final int? existingMoodIndex;
@@ -32,14 +29,6 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
   final _contentController = TextEditingController();
   int _selectedMoodIndex = 0; // 0: 행복해요 (기본값)
 
-  // 기분 데이터 (디자인용)
-  final List<Map<String, dynamic>> _moods = [
-    {'label': '행복해요', 'icon': Icons.sentiment_very_satisfied, 'color': Colors.amber},
-    {'label': '평온해요', 'icon': Icons.sentiment_satisfied, 'color': Colors.orangeAccent},
-    {'label': '슬퍼요', 'icon': Icons.sentiment_dissatisfied, 'color': Colors.blueGrey},
-    {'label': '불안해요', 'icon': Icons.sentiment_neutral, 'color': Colors.blue},
-    {'label': '신나요', 'icon': Icons.sentiment_very_satisfied_outlined, 'color': Colors.yellow},
-  ];
 
   @override
   void initState() {
@@ -107,10 +96,10 @@ class _DiaryWriteScreenState extends State<DiaryWriteScreen> {
               height: 100,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: _moods.length,
+                itemCount: AppConstants.moods.length,
                 separatorBuilder: (context, index) => const SizedBox(width: 15),
                 itemBuilder: (context, index) {
-                  final mood = _moods[index];
+                  final mood = AppConstants.moods[index];
                   final isSelected = _selectedMoodIndex == index;
 
                   return GestureDetector(

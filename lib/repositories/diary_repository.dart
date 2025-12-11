@@ -88,5 +88,25 @@ class DiaryRepository {
   }
 
   //일별 조회
-  Future<Diary?> getDiaryByDate(String dateStr)
+  Future<Diary?> getDiaryByDate(String dateStr) async {
+    try {
+      final response = await _client.get(
+          '${ApiConfig.diaryPath}/$dateStr'
+      );
+
+      if(response.statusCode == 200) {
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+
+        if(jsonResponse['date'] == null) return null;
+
+        return Diary.fromJson(jsonResponse['data']);
+      }else {
+        print("조회 실패 : ${utf8.decode(response.bodyBytes)} ");
+        return null;
+      }
+    }catch(e) {
+      print("일기 상세 조회 에러: $e");
+      return null;
+    }
+  }
 }

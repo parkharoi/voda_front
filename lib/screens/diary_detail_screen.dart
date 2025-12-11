@@ -84,11 +84,11 @@ class DiaryDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // 3. 이미지 (모델에 imageUrl이 있다고 가정시 사용)
-            if (diary.imageUrl != null && diary.imageUrl!.isNotEmpty) ...[
+            if (diary.imgUrl != null && diary.imgUrl!.isNotEmpty) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Image.network(
-                  diary.imageUrl!,
+                  diary.imgUrl!,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
